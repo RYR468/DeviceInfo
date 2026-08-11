@@ -1,0 +1,57 @@
+name: build-ipa
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 环境
+        run: |
+          sw_vers
+          xcodebuild -version
+
+      - name: 安装 XcodeGen
+        run: brew install xcodegen
+
+      - name: 生成 Xcode 工程
+        run: xcodegen generate
+
+      - name: 编译未签名 .app
+        run: |
+          xcodebuild \
+            -project DeviceInfo.xcodeproj \
+            -scheme DeviceInfo \
+            -sdk iphoneos \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_ENTITLEMENTS="" \
+            DEVELOPMENT_TEAM=""
+
+      - name: 打包成未签名 .ipa
+        run: |
+          APP=$(find build/Build/Products -name "DeviceInfo.app" -type d | head -n1)
+          echo "App bundle: $APP"
+          rm -rf Payload && mkdir Payload
+          cp -R "$APP" Payload/
+          zip -qr DeviceInfo.ipa Payload
+          ls -lh DeviceInfo.ipa
+
+      - name: 上传 .ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: DeviceInfo-ipa
+          path: DeviceInfo.ipa
+          if-no-files-found: error
+          retention-days: 30

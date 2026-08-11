@@ -1,0 +1,19 @@
+# Xcode（工程由 XcodeGen 现场生成，不入库）
+*.xcodeproj
+*.xcworkspace
+build/
+DerivedData/
+*.xcuserstate
+*.xcscmblueprint
+
+# 构建产物
+Payload/
+*.ipa
+*.app
+*.xcarchive
+
+# macOS
+.DS_Store
+
+# SwiftPM
+.swiftpm/
