@@ -163,12 +163,18 @@ final class SystemMonitor {
 
         var inUse: UInt64 = 0
         var total: UInt64 = 0
+        // CPU_STATE_* 常量是 Int32（C 的 int），数组下标要 Int，先统一转换
+        let sUser   = Int(CPU_STATE_USER)
+        let sSystem = Int(CPU_STATE_SYSTEM)
+        let sNice   = Int(CPU_STATE_NICE)
+        let sIdle   = Int(CPU_STATE_IDLE)
+        let sMax    = Int(CPU_STATE_MAX)
         for core in 0..<Int(numCPU) {
-            let base   = core * CPU_STATE_MAX
-            let user   = UInt64(info[base + CPU_STATE_USER])
-            let system = UInt64(info[base + CPU_STATE_SYSTEM])
-            let nice   = UInt64(info[base + CPU_STATE_NICE])
-            let idle   = UInt64(info[base + CPU_STATE_IDLE])
+            let base   = core * sMax
+            let user   = UInt64(info[base + sUser])
+            let system = UInt64(info[base + sSystem])
+            let nice   = UInt64(info[base + sNice])
+            let idle   = UInt64(info[base + sIdle])
             inUse += user + system + nice
             total += user + system + nice + idle
         }
